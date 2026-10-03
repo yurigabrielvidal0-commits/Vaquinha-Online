@@ -134,10 +134,33 @@ button.ctaBtn{border:0;border-radius:12px;padding:16px;font-size:18px;font-weigh
 </div>
 
 <script>
-const GOAL=10000, RAISED=0, SUPPORTERS=0;
-document.getElementById('raised').textContent=RAISED.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-document.getElementById('supporters').textContent=SUPPORTERS+(SUPPORTERS===1?' apoiador':' apoiadores');
-document.getElementById('fill').style.width=Math.min(100,RAISED/GOAL*100)+'%';
+const GOAL=10000;
+
+async function atualizarCampanha(){
+  try{
+    const r=await fetch('/api/campaign');
+    const d=await r.json();
+
+    if(!d.success)return;
+
+    document.getElementById('raised').textContent =
+      Number(d.total).toLocaleString('pt-BR',{
+        style:'currency',
+        currency:'BRL'
+      });
+
+    document.getElementById('supporters').textContent =
+      d.supporters + (d.supporters===1 ? ' apoiador' : ' apoiadores');
+
+    document.getElementById('fill').style.width =
+      Math.min(100,d.progress) + '%';
+
+  }catch(e){}
+}
+
+atualizarCampanha();
+setInterval(atualizarCampanha,5000);
+
 let selectedDonation=0,currentExternalId='',statusTimer=null;
 function brl(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 function openDonate(){document.getElementById('modal').classList.add('open');resetPayment();document.getElementById('otherBox').style.display='none';document.getElementById('selected').textContent='';document.querySelectorAll('.amount').forEach(x=>x.classList.remove('selected'));selectedDonation=0;}
